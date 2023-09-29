@@ -13,7 +13,7 @@ cuda 11.7 --> https://forums.developer.nvidia.com/t/installing-nvidia-cuda-toolk
 libtorch 11.7 --> wget https://download.pytorch.org/libtorch/cu117/libtorch-cxx11-abi-shared-with-deps-2.0.1%2Bcu117.zip \
 pytorch 2.0.1 --> https://pytorch.org/get-started/locally/ \
 boost 1.80.0 --> https://www.boost.org/users/history/version_1_80_0.html \
-*** Once boost is install, set target link library for boost \
+*** Once boost is install, set target link library for boost in cmake text file \
 opencv 4.8.0 --> https://www.geeksforgeeks.org/how-to-install-opencv-in-c-on-linux/ \
 
 ## To compile libtorch
