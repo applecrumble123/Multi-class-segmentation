@@ -1,6 +1,8 @@
 # Multi-class-segmentation
 Multiclass segmentation 
 
+Reference work: https://github.com/xiaoyufenfei/Efficient-Segmentation-Networks#Dataset-Setting
+
 ## Prerequisite
 cuda 11.7\
 libtorch 11.7\
