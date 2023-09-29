@@ -1,171 +1,59 @@
-absl-py==1.4.0
-addict==2.4.0
-appdirs==1.4.4
-apturl==0.5.2
-bcrypt==3.1.7
-beautifulsoup4==4.12.2
-blinker==1.4
-Brlapi==0.7.0
+absl-py==2.0.0
+brotlipy==0.7.0
 cachetools==5.3.1
-certifi==2019.11.28
-chardet==3.0.4
-cityscapesScripts==2.2.2
-Click==7.0
-clip-by-openai==1.1
-cmake==3.27.0
-colorama==0.4.3
-coloredlogs==15.0.1
-command-not-found==0.3
-contourpy==1.1.0
-cryptography==2.8
-cupshelpers==1.0
+certifi @ file:///croot/certifi_1690232220950/work/certifi
+cffi @ file:///work/ci_py311/cffi_1676822533496/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+contourpy==1.1.1
+cryptography @ file:///croot/cryptography_1694444244250/work
 cycler==0.11.0
-dbus-python==1.2.16
-defer==1.0.6
-distro==1.4.0
-distro-info==0.23+ubuntu1.1
-duplicity==0.8.12.0
-efficientnet-pytorch==0.7.1
-entrypoints==0.3
-fasteners==0.14.1
-filelock==3.12.2
-flatbuffers==23.5.26
-fonttools==4.41.1
-fsspec==2023.6.0
-ftfy==6.1.1
-future==0.18.2
-google-auth==2.22.0
+filelock @ file:///work/ci_py311/filelock_1676823024085/work
+fonttools==4.42.1
+gmpy2 @ file:///work/ci_py311/gmpy2_1676839849213/work
+google-auth==2.23.0
 google-auth-oauthlib==1.0.0
-grpcio==1.57.0
-httplib2==0.14.0
-huggingface-hub==0.16.4
-humanfriendly==10.0
-idna==2.8
-importlib-metadata==6.8.0
-importlib-resources==6.0.0
-Jinja2==3.1.2
+grpcio==1.58.0
+idna @ file:///work/ci_py311/idna_1676822698822/work
+Jinja2 @ file:///work/ci_py311/jinja2_1676823587943/work
 joblib==1.3.2
-keyring==18.0.1
-kiwisolver==1.4.4
-language-selector==0.1
-launchpadlib==1.10.13
-lazr.restfulclient==0.14.2
-lazr.uri==1.0.3
-lit==16.0.6
-lockfile==0.12.2
-louis==3.12.0
-lxml==4.9.3
-macaroonbakery==1.3.1
-Mako==1.1.0
+kiwisolver==1.4.5
 Markdown==3.4.4
-markdown-it-py==3.0.0
-MarkupSafe==2.1.3
-matplotlib==3.7.2
-mdurl==0.1.2
-mmcv==2.0.1
-mmengine==0.8.3
-model-index==0.1.11
-monotonic==1.5
-mpmath==1.3.0
-munch==4.0.0
-netifaces==0.10.4
-networkx==3.1
-numpy==1.24.4
-nvidia-cublas-cu11==11.10.3.66
-nvidia-cuda-cupti-cu11==11.7.101
-nvidia-cuda-nvrtc-cu11==11.7.99
-nvidia-cuda-runtime-cu11==11.7.99
-nvidia-cudnn-cu11==8.5.0.96
-nvidia-cufft-cu11==10.9.0.58
-nvidia-curand-cu11==10.2.10.91
-nvidia-cusolver-cu11==11.4.0.1
-nvidia-cusparse-cu11==11.7.4.91
-nvidia-nccl-cu11==2.14.3
-nvidia-nvtx-cu11==11.7.91
-oauthlib==3.1.0
-olefile==0.46
-onnx==1.14.0
-onnxruntime==1.15.1
-opencv-python==4.8.0.74
-opendatalab==0.0.9
-openmim==0.3.9
-ordered-set==4.1.0
+MarkupSafe @ file:///work/ci_py311/markupsafe_1676823507015/work
+matplotlib==3.8.0
+mkl-fft @ file:///croot/mkl_fft_1695058164594/work
+mkl-random @ file:///croot/mkl_random_1695059800811/work
+mkl-service==2.4.0
+mpmath @ file:///croot/mpmath_1690848262763/work
+networkx @ file:///croot/networkx_1690561992265/work
+numpy @ file:///croot/numpy_and_numpy_base_1691091611330/work
+oauthlib==3.2.2
+opencv-python==4.8.0.76
 packaging==23.1
-pandas==2.0.3
-paramiko==2.6.0
-pexpect==4.6.0
-Pillow==7.0.0
-platformdirs==3.10.0
-pretrainedmodels==0.7.4
-prettytable==3.8.0
-protobuf==4.24.1
+Pillow @ file:///croot/pillow_1695134008276/work
+protobuf==4.24.3
 pyasn1==0.5.0
 pyasn1-modules==0.3.0
-pycairo==1.16.2
-pycocotools==2.0.6
-pycryptodome==3.18.0
-pycups==1.9.73
-Pygments==2.15.1
-PyGObject==3.36.0
-PyJWT==1.7.1
-pymacaroons==0.13.0
-PyNaCl==1.3.0
-pyparsing==3.0.9
-pyquaternion==0.9.9
-pyRFC3339==1.1
-python-apt==2.0.1+ubuntu0.20.4.1
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pyOpenSSL @ file:///croot/pyopenssl_1690223430423/work
+pyparsing==3.1.1
+PySocks @ file:///work/ci_py311/pysocks_1676822712504/work
 python-dateutil==2.8.2
-python-debian==0.1.36+ubuntu1.1
-pytz==2023.3
-pyxdg==0.26
-PyYAML==5.3.1
-regex==2023.6.3
-reportlab==3.5.34
-requests==2.22.0
+requests @ file:///croot/requests_1690400202158/work
 requests-oauthlib==1.3.1
-requests-unixsocket==0.2.0
-rich==13.5.2
 rsa==4.9
-safetensors==0.3.1
-scikit-learn==1.3.0
-scipy==1.10.1
-screen-resolution-extra==0.0.0
-SecretStorage==2.3.1
--e git+https://github.com/ngthanhtin/owlvit_segment_anything.git@c663359e0604bc0f3944d508bb86a777a2e9767d#egg=segment_anything&subdirectory=segment_anything
-simplejson==3.16.0
-six==1.12.0
-soupsieve==2.4.1
-ssh-import-id==5.10
-sympy==1.12
-systemd-python==234
-tabulate==0.9.0
+scikit-learn==1.3.1
+scipy==1.11.2
+six==1.16.0
+sympy @ file:///work/ci_py311_2/sympy_1679339311852/work
 tensorboard==2.14.0
 tensorboard-data-server==0.7.1
-termcolor==2.3.0
 threadpoolctl==3.2.0
-timm==0.9.2
-tokenizers==0.13.3
-tomli==2.0.1
 torch==2.0.1
-torch-tb-profiler==0.4.1
 torchaudio==2.0.2
 torchsummary==1.5.1
 torchvision==0.15.2
-tqdm==4.65.0
-transformers==4.31.0
+tqdm==4.66.1
 triton==2.0.0
-typing==3.7.4.3
-typing-extensions==4.7.1
-tzdata==2023.3
-ubuntu-advantage-tools==8001
-ubuntu-drivers-common==0.0.0
-ufw==0.36
-unattended-upgrades==0.1
-urllib3==1.25.8
-usb-creator==0.3.7
-wadllib==1.3.3
-wcwidth==0.2.6
-werkzeug==2.3.7
-xkit==0.0.0
-yapf==0.40.1
-zipp==3.16.2
+typing_extensions @ file:///croot/typing_extensions_1690297465030/work
+urllib3 @ file:///croot/urllib3_1686163155763/work
+Werkzeug==2.3.7
