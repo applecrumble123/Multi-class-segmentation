@@ -36,7 +36,7 @@ If there is compilation error after changing nvcc --> https://github.com/NVlabs/
 ***Make sure cuda compiler is up-to-date 
 
 ## Dataset Preparation
-Get annotations from cvat --> 
+Get annotations from cvat --> export dataset (export format: CVAT for images 1.1)
 convert_xml_to_json -->  convert cvat xml annotations to json format
 get_segmented_images.py --> get the mask of images from json format
 
