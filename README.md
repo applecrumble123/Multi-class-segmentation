@@ -26,7 +26,7 @@ libtorch 11.7 --> wget https://download.pytorch.org/libtorch/cu117/libtorch-cxx1
 pytorch 2.0.1 --> https://pytorch.org/get-started/locally/ \
 boost 1.80.0 --> https://www.boost.org/users/history/version_1_80_0.html \
 *** Once boost is install, set target link library for boost in cmake text file \
-opencv 4.8.0 --> https://www.geeksforgeeks.org/how-to-install-opencv-in-c-on-linux/ \
+opencv 4.8.0 --> https://www.geeksforgeeks.org/how-to-install-opencv-in-c-on-linux/ 
 
 ## To compile libtorch
 
