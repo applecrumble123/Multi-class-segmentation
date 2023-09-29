@@ -1,7 +1,7 @@
 # Multi-class-segmentation
 Multiclass segmentation 
 
-Reference work: https://github.com/xiaoyufenfei/Efficient-Segmentation-Networks \
+Reference work: https://github.com/xiaoyufenfei/Efficient-Segmentation-Networks 
 
 @misc{Efficient-Segmentation-Networks, \
   author = {Yu Wang},\
