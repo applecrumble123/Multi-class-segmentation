@@ -1,1 +1,1 @@
-Epoch:22 ------ Mean Batch Loss (0.6556073466936747) ------ Validation_loss: (0.6189417004585266)
+Epoch:57 ------ Mean Batch Loss (0.6478864947954813) ------ Validation_loss: (0.5972367405891419)

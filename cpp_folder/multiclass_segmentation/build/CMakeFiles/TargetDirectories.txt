@@ -1,3 +1,0 @@
-/home/johnathon/Desktop/multiclass_segmentation_cpp_env/multiclass_segmentation/build/CMakeFiles/multiclass_segmentation.dir
-/home/johnathon/Desktop/multiclass_segmentation_cpp_env/multiclass_segmentation/build/CMakeFiles/edit_cache.dir
-/home/johnathon/Desktop/multiclass_segmentation_cpp_env/multiclass_segmentation/build/CMakeFiles/rebuild_cache.dir

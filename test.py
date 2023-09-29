@@ -36,6 +36,8 @@ import random
 
 from sklearn.metrics import accuracy_score
 
+import config
+
 
 
 device = torch.device("cuda:{}".format(0) if torch.cuda.is_available() else "cpu")
@@ -45,9 +47,9 @@ print("Is there a GPU available: "),
 print(torch.cuda.device_count())
 """
 
-root_folder_path = "/home/johnathon/Desktop/test_dir"
-raw_image_folder_path = os.path.join(root_folder_path, "raw_images")
-masked_images_folder_path = os.path.join(root_folder_path, "masked_images")
+root_folder_path = config.ROOT_FOLDER_PATH
+raw_image_folder_path = config.RAW_IMAGE_FOLDER_PATH
+masked_images_folder_path = config.MASKED_IMAGES_FOLDER_PATH
 
 ################################### Split into train, val, test ###################################
 
@@ -66,9 +68,9 @@ masked_images_path_list = sorted(filter(os.path.isfile, glob.glob(masked_images_
 # raw images path
 train_raw_image_path_list = raw_image_path_list[:30]
 val_raw_image_path_list = raw_image_path_list[30:40]
-# test_raw_image_path_list = raw_image_path_list[40:]
-test_raw_image_path_list = raw_image_path_list[49:]
-print(test_raw_image_path_list)
+test_raw_image_path_list = raw_image_path_list[40:]
+#test_raw_image_path_list = raw_image_path_list[49:]
+#print(test_raw_image_path_list)
 #print(train_raw_image_list)
 #print(val_raw_image_list)
 #print(test_raw_image_list)
@@ -76,9 +78,9 @@ print(test_raw_image_path_list)
 # masked images path
 train_masked_image_path_list = masked_images_path_list[:30]
 val_masked_image_path_list = masked_images_path_list[30:40]
-# test_masked_image_path_list = masked_images_path_list[40:]
-test_masked_image_path_list = masked_images_path_list[49:]
-print(test_masked_image_path_list)
+test_masked_image_path_list = masked_images_path_list[40:]
+#test_masked_image_path_list = masked_images_path_list[49:]
+#print(test_masked_image_path_list)
 
 
 
@@ -229,12 +231,12 @@ class ImageDataset(Dataset):
             # resize to 256
             #img = img.resize((256, 256), Image.Resampling.LANCZOS)
             # convert PIL to tensor
-            print(np.array(img))
-            print(np.array(img).shape)
+            #print(np.array(img))
+            #print(np.array(img).shape)
             #print(np.array(img).shape)
             img = transforms.ToTensor()(img)
-            print(img)
-            print(img.shape)
+            #print(img)
+            #print(img.shape)
             #mask = transforms.ToTensor()(mask)
             encoded_mask, _ = rgb_to_one_hot_encoded_mask(np.array(mask))
         return img, encoded_mask
@@ -243,14 +245,14 @@ class ImageDataset(Dataset):
 test_transformed_dataset = ImageDataset(images = test_raw_image_path_list, masks=test_masked_image_path_list, transform=None)
 test_dataloader = DataLoader(test_transformed_dataset, batch_size=1, shuffle=True, num_workers=1)
 
-checkpoints_folder = "/home/johnathon/Desktop/multi_segmentation/saved_model"
+saved_model_folder = config.SAVED_MODEL_FOLDER
 
 sqnet_model = SQNet(classes=len(CLASS_LIST))
 #sqnet_model = nn.DataParallel(sqnet_model, device_ids=list(range(torch.cuda.device_count())))
 sqnet_model.eval()
 
 # get the model weights
-state_dict = torch.load(os.path.join(checkpoints_folder, "epoch_22_model.pt"), map_location=torch.device('cpu'))
+state_dict = torch.load(os.path.join(saved_model_folder, config.SAVED_MODEL_NAME), map_location=torch.device('cpu'))
 
 # load the model weights
 sqnet_model.load_state_dict(state_dict)
@@ -271,7 +273,7 @@ for param in sqnet_model.parameters():
 
 
 for batch_idx, (data, targets) in enumerate(test_dataloader):
-        print(batch_idx)
+        #print(batch_idx)
         
         # shape --> [batch_size, C, H, W] [1, 3, 960, 1280]
         # data = data.to(device)
@@ -293,8 +295,8 @@ for batch_idx, (data, targets) in enumerate(test_dataloader):
         # shape --> [C,H,W] [1, 960, 1280]
         # each pixel represents a class
         new_predictions = torch.argmax(predictions, dim=1)
-        print(new_predictions)
-        print(new_predictions.size())
+        #print(new_predictions)
+        #print(new_predictions.size())
         
         
         ground_truth = torch.argmax(targets, dim=1)
@@ -325,7 +327,7 @@ for batch_idx, (data, targets) in enumerate(test_dataloader):
 
         # map each class indices to each colour
         for index, color in enumerate(mapping.keys()):
-            print(index, color)
+            #print(index, color)
             #if index < len(mapping.keys()):
                 #print(index)
                 # bring the array to the cpu first
