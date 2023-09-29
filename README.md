@@ -2,14 +2,14 @@
 Multiclass segmentation 
 
 Reference work: https://github.com/xiaoyufenfei/Efficient-Segmentation-Networks#Dataset-Setting \
-@misc{Efficient-Segmentation-Networks,
-  author = {Yu Wang},
-  title = {Efficient-Segmentation-Networks Pytorch Implementation},
-  year = {2019},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/xiaoyufenfei/Efficient-Segmentation-Networks}},
-  commit = {master}
+@misc{Efficient-Segmentation-Networks, \
+  author = {Yu Wang},\
+  title = {Efficient-Segmentation-Networks Pytorch Implementation}, \
+  year = {2019}, \
+  publisher = {GitHub}, \
+  journal = {GitHub repository}, \
+  howpublished = {\url{https://github.com/xiaoyufenfei/Efficient-Segmentation-Networks}}, \
+  commit = {master} \
 }
 
 ## Prerequisite
