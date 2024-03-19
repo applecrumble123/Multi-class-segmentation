@@ -1,0 +1,59 @@
+absl-py==2.0.0
+brotlipy==0.7.0
+cachetools==5.3.1
+certifi @ file:///croot/certifi_1690232220950/work/certifi
+cffi @ file:///work/ci_py311/cffi_1676822533496/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+contourpy==1.1.1
+cryptography @ file:///croot/cryptography_1694444244250/work
+cycler==0.11.0
+filelock @ file:///work/ci_py311/filelock_1676823024085/work
+fonttools==4.42.1
+gmpy2 @ file:///work/ci_py311/gmpy2_1676839849213/work
+google-auth==2.23.0
+google-auth-oauthlib==1.0.0
+grpcio==1.58.0
+idna @ file:///work/ci_py311/idna_1676822698822/work
+Jinja2 @ file:///work/ci_py311/jinja2_1676823587943/work
+joblib==1.3.2
+kiwisolver==1.4.5
+Markdown==3.4.4
+MarkupSafe @ file:///work/ci_py311/markupsafe_1676823507015/work
+matplotlib==3.8.0
+mkl-fft @ file:///croot/mkl_fft_1695058164594/work
+mkl-random @ file:///croot/mkl_random_1695059800811/work
+mkl-service==2.4.0
+mpmath @ file:///croot/mpmath_1690848262763/work
+networkx @ file:///croot/networkx_1690561992265/work
+numpy @ file:///croot/numpy_and_numpy_base_1691091611330/work
+oauthlib==3.2.2
+opencv-python==4.8.0.76
+packaging==23.1
+Pillow @ file:///croot/pillow_1695134008276/work
+protobuf==4.24.3
+pyasn1==0.5.0
+pyasn1-modules==0.3.0
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pyOpenSSL @ file:///croot/pyopenssl_1690223430423/work
+pyparsing==3.1.1
+PySocks @ file:///work/ci_py311/pysocks_1676822712504/work
+python-dateutil==2.8.2
+requests @ file:///croot/requests_1690400202158/work
+requests-oauthlib==1.3.1
+rsa==4.9
+scikit-learn==1.3.1
+scipy==1.11.2
+six==1.16.0
+sympy @ file:///work/ci_py311_2/sympy_1679339311852/work
+tensorboard==2.14.0
+tensorboard-data-server==0.7.1
+threadpoolctl==3.2.0
+torch==2.0.1
+torchaudio==2.0.2
+torchsummary==1.5.1
+torchvision==0.15.2
+tqdm==4.66.1
+triton==2.0.0
+typing_extensions @ file:///croot/typing_extensions_1690297465030/work
+urllib3 @ file:///croot/urllib3_1686163155763/work
+Werkzeug==2.3.7

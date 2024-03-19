@@ -24,11 +24,15 @@ from torch.utils.tensorboard import SummaryWriter
 import torchvision.models as models
 
 from SQNet import SQNet
+from bisenetv2 import BiSeNetv2
+from lednet import Net, Encoder, Decoder
+from LEDNet import LEDNet
 from UNet import UNet
 from loss import CrossEntropyLoss2d, CrossEntropyLoss2dLabelSmooth, FocalLoss2d, LDAMLoss, ProbOhemCrossEntropy2d, LovaszSoftmax, CrossEntropy2d
 from AdamW import AdamW
 from RAdam import RAdam
 from dice_loss import DiceLoss
+
 
 from PIL import Image
 
@@ -66,9 +70,11 @@ masked_images_path_list = sorted(filter(os.path.isfile, glob.glob(masked_images_
 #print(masked_images_path_list)
 
 # raw images path
-train_raw_image_path_list = raw_image_path_list[:30]
-val_raw_image_path_list = raw_image_path_list[30:40]
-test_raw_image_path_list = raw_image_path_list[40:]
+train_raw_image_path_list = raw_image_path_list[:]
+val_raw_image_path_list = raw_image_path_list[:]
+#test_raw_image_path_list = raw_image_path_list[45:]
+test_raw_image_path_list = raw_image_path_list[:2]
+
 #test_raw_image_path_list = raw_image_path_list[49:]
 #print(test_raw_image_path_list)
 #print(train_raw_image_list)
@@ -76,18 +82,19 @@ test_raw_image_path_list = raw_image_path_list[40:]
 #print(test_raw_image_list)
 
 # masked images path
-train_masked_image_path_list = masked_images_path_list[:30]
-val_masked_image_path_list = masked_images_path_list[30:40]
-test_masked_image_path_list = masked_images_path_list[40:]
+train_masked_image_path_list = masked_images_path_list[:]
+val_masked_image_path_list = masked_images_path_list[:]
+#test_masked_image_path_list = masked_images_path_list[45:]
+test_masked_image_path_list = masked_images_path_list[:2]
 #test_masked_image_path_list = masked_images_path_list[49:]
 #print(test_masked_image_path_list)
 
 
 
 # sky, land, sea, ship, buoy, other
-CLASS_LIST = ['background', 'sky', 'land', 'sea', 'ship', 'buoy', 'other']
-PALETTE = [[0, 0, 0],[128, 0, 0], [0, 128, 0], [128, 128, 0], 
-           [0, 0, 128], [128, 0, 128], [0, 128, 128]]
+CLASS_LIST = ['background','sky', 'land', 'sea', 'ship', 'buoy', 'other', 'unknown']
+PALETTE = [[0, 0, 0], [51, 221, 255], [0, 128, 0], [61, 61, 245], 
+           [255, 0, 0], [255, 204, 51], [184, 61, 245], [128,128,128]]
 
 
 def rgb_to_one_hot_encoded_mask(rgb_mask):
@@ -202,13 +209,13 @@ class ImageDataset(Dataset):
     
     def __getitem__(self, index: int):
             
-        img = self.images[index]
-        mask = self.masks[index]
+        img_path = self.images[index]
+        mask_path = self.masks[index]
 
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
-        img = Image.open(img).convert("RGB")
-        mask = Image.open(mask).convert("RGB")
+        img = Image.open(img_path).convert("RGB")
+        mask = Image.open(mask_path).convert("RGB")
 
 
         # convert mask to grayscale
@@ -239,7 +246,7 @@ class ImageDataset(Dataset):
             #print(img.shape)
             #mask = transforms.ToTensor()(mask)
             encoded_mask, _ = rgb_to_one_hot_encoded_mask(np.array(mask))
-        return img, encoded_mask
+        return img, encoded_mask, mask_path
 
 
 test_transformed_dataset = ImageDataset(images = test_raw_image_path_list, masks=test_masked_image_path_list, transform=None)
@@ -247,7 +254,9 @@ test_dataloader = DataLoader(test_transformed_dataset, batch_size=1, shuffle=Tru
 
 saved_model_folder = config.SAVED_MODEL_FOLDER
 
-sqnet_model = SQNet(classes=len(CLASS_LIST))
+#sqnet_model = SQNet(classes=len(CLASS_LIST))
+#sqnet_model = Net(num_classes=len(CLASS_LIST))
+sqnet_model = BiSeNetv2(num_class=len(CLASS_LIST))
 #sqnet_model = nn.DataParallel(sqnet_model, device_ids=list(range(torch.cuda.device_count())))
 sqnet_model.eval()
 
@@ -272,7 +281,7 @@ for param in sqnet_model.parameters():
     param.requires_grad = False
 
 
-for batch_idx, (data, targets) in enumerate(test_dataloader):
+for batch_idx, (data, targets, mask_path) in enumerate(test_dataloader):
         #print(batch_idx)
         
         # shape --> [batch_size, C, H, W] [1, 3, 960, 1280]
@@ -292,24 +301,41 @@ for batch_idx, (data, targets) in enumerate(test_dataloader):
         #print(predictions)
         #print(predictions.shape)
         
-        # shape --> [C,H,W] [1, 960, 1280]
+        # shape --> [B,H,W] [1, 960, 1280]
         # each pixel represents a class
-        new_predictions = torch.argmax(predictions, dim=1)
+        # softmax gives the probabilities of the class from 0 to 1
+        predictions_softmax = torch.softmax(predictions, dim=1)
+        predictions_sigmoid = torch.sigmoid(predictions)
+        #print(predictions_sigmoid)
+        # argmax to get the class with the highest probabilities
+        new_predictions = torch.argmax(predictions_softmax, dim=1)
+        #new_predictions = torch.argmax(predictions, dim=1)
         #print(new_predictions)
         #print(new_predictions.size())
+
+        # new_prediction shape --> [H,W] [960, 1280]
+        # remove the batch number
+        #new_predictions = torch.squeeze(new_predictions, dim=0)
         
-        
+        # ground_truth shape --> [B,H,W] [1, 960, 1280]
+        # each pixel represents a class
         ground_truth = torch.argmax(targets, dim=1)
         #print(ground_truth)
        
-        # shape --> [H,W,C] [960, 1280, 1]
+        # ground_truth shape --> [H,W] [960, 1280]
+        # remove the batch number
+        #ground_truth = torch.squeeze(ground_truth, dim=0)
+
+        # shape --> [H,W,B] [960, 1280, 1]
         # to stack to get 3 channels
-        new_predictions = torch.reshape(new_predictions, (new_predictions.shape[1],new_predictions.shape[2], new_predictions.shape[0]))
+        #new_predictions = torch.reshape(new_predictions, (new_predictions.shape[1],new_predictions.shape[2], new_predictions.shape[0]))
+        new_predictions = new_predictions.permute(1, 2, 0).contiguous()
         #print(new_predictions)
         #print(new_predictions.shape)
 
         # get 3 channels so that can map each pixel class to the colour
         three_channels_prediction = torch.cat([new_predictions, new_predictions, new_predictions], dim=2)
+        #three_channels_prediction = torch.stack([new_predictions, new_predictions, new_predictions], dim=-1)
         #print(three_channels_prediction)
         #print(three_channels_prediction.shape)
 
@@ -337,15 +363,27 @@ for batch_idx, (data, targets) in enumerate(test_dataloader):
         #print(new_mask.shape)
         
         # check the output of the mask
-        cv2.imwrite("/home/johnathon/Desktop/test2.jpg", new_mask)
+        #cv2.imwrite("/home/johnathon/Desktop/test{}.jpg".format(batch_idx), new_mask)
         
         
 
-        # flatten the ground truth and prediction to check the accuracy
+        #flatten the ground truth and prediction to check the accuracy
         y_ground_truth = np.array(torch.flatten(ground_truth).cpu())
         y_predict = np.array(torch.flatten(new_predictions).cpu())
         acc = accuracy_score(y_ground_truth, y_predict)
+        print(mask_path)
         print("Accuracy is {}%".format(acc * 100))
+        
+        # check the output of the mask
+        #cv2.imwrite("/home/ums/Desktop/test2.jpg", new_mask)
+        pil_mask = Image.fromarray(np.uint8(new_mask)).convert('RGB')
+        #pil_mask = Image.fromarray(new_mask)
+        pil_mask.save("/home/johnathon/Desktop/test_{}_acc_{}%.jpg".format(batch_idx, round(acc*100,3)))
+
+
+
+        #cv2.imwrite("/home/johnathon/Desktop/test_{}_acc_{}%.jpg".format(batch_idx, round(acc*100,3)), new_mask)
+
         
         #break
          

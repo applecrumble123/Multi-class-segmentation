@@ -26,12 +26,17 @@ import torchvision.models as models
 from SQNet import SQNet
 from UNet import UNet
 from loss import CrossEntropyLoss2d, CrossEntropyLoss2dLabelSmooth, FocalLoss2d, LDAMLoss, ProbOhemCrossEntropy2d, LovaszSoftmax, CrossEntropy2d
+from unified_focal_loss_pytorch import AsymmetricFocalLoss
 from AdamW import AdamW
 from RAdam import RAdam
 from dice_loss import DiceLoss
-
+from lednet import Net, Encoder, Decoder
+from LEDNet import LEDNet
+from bisenetv2 import BiSeNetv2
+from archt import BiSeNetV2
+from twowayloss import TwoWayLoss
 import config
-
+from pytorch_toolbelt.losses.dice import DiceLoss as dice_loss_pytorch_toolbelt
 
 
 from PIL import Image
@@ -64,27 +69,36 @@ masked_images_path_list = sorted(filter(os.path.isfile, glob.glob(masked_images_
 
 
 # raw images path
-train_raw_image_path_list = raw_image_path_list[:30]
-val_raw_image_path_list = raw_image_path_list[30:40]
-test_raw_image_path_list = raw_image_path_list[40:]
-#print(train_raw_image_list)
-#print(val_raw_image_list)
+train_raw_image_path_list = raw_image_path_list[:42]
+val_raw_image_path_list = raw_image_path_list[42:]
+test_raw_image_path_list = raw_image_path_list[45:]
+
+# train_raw_image_path_list = raw_image_path_list[:120]
+# val_raw_image_path_list = raw_image_path_list[120:135]
+# test_raw_image_path_list = raw_image_path_list[135:]
+
+#print(train_raw_image_path_list)
+#print(val_raw_image_path_list)
 #print(test_raw_image_list)
 
 # masked images path
-train_masked_image_path_list = masked_images_path_list[:30]
-val_masked_image_path_list = masked_images_path_list[30:40]
-test_masked_image_path_list = masked_images_path_list[40:]
+train_masked_image_path_list = masked_images_path_list[:42]
+val_masked_image_path_list = masked_images_path_list[42:]
+test_masked_image_path_list = masked_images_path_list[45:]
+
+# train_masked_image_path_list = masked_images_path_list[:120]
+# val_masked_image_path_list = masked_images_path_list[120:135]
+# test_masked_image_path_list = masked_images_path_list[135:]
 
 # sky, land, sea, ship, buoy, other
-CLASS_LIST = ['background','sky', 'land', 'sea', 'ship', 'buoy', 'other']
-PALETTE = [[0, 0, 0], [128, 0, 0], [0, 128, 0], [128, 128, 0], 
-           [0, 0, 128], [128, 0, 128], [0, 128, 128]]
+CLASS_LIST = ['background','sky', 'land', 'sea', 'ship', 'buoy', 'other', 'unknown']
+PALETTE = [[0, 0, 0], [51, 221, 255], [0, 128, 0], [61, 61, 245], 
+           [255, 0, 0], [255, 204, 51], [184, 61, 245], [128,128,128]]
 
 
 ##################################### Create dataset class ###############################
 
-def rgb_to_one_hot_encoded_mask(rgb_mask):
+def rgb_to_encoded_mask(rgb_mask):
 
     # shape --> [H,W,C] [960, 1280, 3]
     target = torch.from_numpy(rgb_mask)
@@ -141,15 +155,17 @@ def rgb_to_one_hot_encoded_mask(rgb_mask):
 
             one_hot_encoding_mask_list = torch.cat((one_hot_encoding_mask_list, validx.unsqueeze(0)),0)
 
-    # print(class_indices_mask_list)
+    #print(class_indices_mask_list)
     # print(class_indices_mask_list.shape)
     # print(one_hot_encoding_mask_list)
     # print(one_hot_encoding_mask_list.shape)
+    #print("=============================================")
 
-    # shape --> [H,W,C] [960, 1280, 7]
+    # shape --> [H,W,C] [960, 1280, 8]
     re_arranged_class_indices_mask = class_indices_mask_list.permute(1, 2, 0).contiguous()
+    re_arranged_one_hot_encoding_mask = one_hot_encoding_mask_list.permute(1, 2, 0).contiguous()
     # print(re_arranged_one_hot_encoding_mask)
-    # print(re_arranged_one_hot_encoding_mask.shape)
+    #print(re_arranged_one_hot_encoding_mask.shape)
 
     # single channel mask
     # shape --> [H,W] [960, 1280]
@@ -158,7 +174,8 @@ def rgb_to_one_hot_encoded_mask(rgb_mask):
     # argmax returns the indices of the maximum value of all elements in the input tensor
     # If there are multiple maximal values then the indices of the first maximal value are returned.
     grayscale_mask = torch.argmax(re_arranged_class_indices_mask, axis=-1)
-    #print(grayscale_mask)
+    print(grayscale_mask)
+    print(grayscale_mask.shape)
     
     # convert each pixel class to a shade of grayscale
     #grayscale_mask = (grayscale_mask/len(CLASS_LIST))*255
@@ -168,8 +185,9 @@ def rgb_to_one_hot_encoded_mask(rgb_mask):
     #grayscale_mask = grayscale_mask.unsqueeze(-1)
     #print(grayscale_mask.shape)
 
-    
-    return class_indices_mask_list, grayscale_mask
+    #print(class_indices_mask_list.shape)
+    #return class_indices_mask_list, grayscale_mask
+    return one_hot_encoding_mask_list, grayscale_mask
 
 """
 # Testing the function
@@ -224,7 +242,7 @@ class ImageDataset(Dataset):
             #print(np.array(mask).shape)
 
             # outout mask is in numpy array
-            encoded_mask , _ = rgb_to_one_hot_encoded_mask(np.array(mask))
+            encoded_mask , _ = rgb_to_encoded_mask(np.array(mask))
 
         if self.transform is None:
             # resize to 256
@@ -232,7 +250,7 @@ class ImageDataset(Dataset):
             # convert PIL to tensor
             img = transforms.ToTensor()(img)
             #mask = transforms.ToTensor()(mask)
-            encoded_mask, _ = rgb_to_one_hot_encoded_mask(np.array(mask))
+            encoded_mask, _ = rgb_to_encoded_mask(np.array(mask))
         return img, encoded_mask
 
 
@@ -298,27 +316,71 @@ class EvalDataTransform(object):
 """
 
 
+def my_collate(batch):
+    max_h = 0
+    max_w = 0
+    for x, y in batch:
+        #print('y: ',y )
+        h,w = x.shape[1], x.shape[2]
+        if h>max_h:
+            max_h=h
+        if w>max_w:
+            max_w = w
+    new_batch = []
+    for x, y in batch:
+        if (x.shape[1] != max_h) or (x.shape[2] != max_w):
+            #print('Fix (like padding?)')
+            h,w = x.shape[1], x.shape[2]
+            pad_w = torch.zeros(3, h, max_w-w)
+            new_x = torch.cat((x,pad_w),2) # adjust width
+            new_h, new_w = new_x.shape[1], new_x.shape[2]
+            pad_h = torch.zeros(3, max_h-new_h, new_w) # adjust height
+            new_x = torch.cat((new_x,pad_h),1)
+            #new_batch.append((new_x,y))
+            new_batch_tensor = torch.cat((new_x,y), 0)
+            return new_batch_tensor
+        else:
+            #new_batch.append((x,y)) # max dimensions -- > just add to the new batch
+            new_batch_tensor = torch.cat((x,y), 0) # max dimensions -- > just add to the new batch
+            return new_batch_tensor
+        
+    #print('done')
+    #return new_batch
+    
+
+
+
 train_transformed_dataset = ImageDataset(images = train_raw_image_path_list, masks=train_masked_image_path_list, transform=TrainDataTransforms())
 train_dataloader = DataLoader(train_transformed_dataset, batch_size=config.BATCH_SIZE, shuffle=True, num_workers=config.NUM_OF_WORKERS)
 
 val_transformed_dataset = ImageDataset(images = val_raw_image_path_list, masks=val_masked_image_path_list, transform=None)
 val_dataloader = DataLoader(val_transformed_dataset, batch_size=config.BATCH_SIZE, shuffle=True, num_workers=config.NUM_OF_WORKERS)
 
-test_transformed_dataset = ImageDataset(images = test_raw_image_path_list, masks=test_masked_image_path_list, transform=None)
-test_dataloader = DataLoader(test_transformed_dataset, batch_size=config.BATCH_SIZE, shuffle=True, num_workers=config.NUM_OF_WORKERS)
+#test_transformed_dataset = ImageDataset(images = test_raw_image_path_list, masks=test_masked_image_path_list, transform=None)
+#test_dataloader = DataLoader(test_transformed_dataset, batch_size=config.BATCH_SIZE, shuffle=True, num_workers=config.NUM_OF_WORKERS)
 
 
 # SQNet model
-sqnet_model = SQNet(classes=len(CLASS_LIST)).to(device)
+#sqnet_model = SQNet(classes=len(CLASS_LIST)).to(device)
+#sqnet_model = Net(num_classes=len(CLASS_LIST)).to(device)
+sqnet_model = BiSeNetv2(num_class=len(CLASS_LIST)).to(device)
+#sqnet_model = BiSeNetV2(n_classes=len(CLASS_LIST)).to(device)
+#sqnet_model = Decoder(Encoder(num_classes=len(CLASS_LIST))).to(device)
 #sqnet_model = nn.DataParallel(sqnet_model, device_ids=list(range(torch.cuda.device_count())))
 #LDAMLoss_loss_fn = LDAMLoss(cls_num_list=CLASS_LIST_LABEL).to(device) # can use cross entropy loss
 #loss_fn = nn.CrossEntropyLoss().to(device)
-loss_fn = DiceLoss().to(device)
+#loss_fn = DiceLoss().to(device)
+#loss_fn = dice_loss_pytorch_toolbelt("multilabel").to(device)
+#loss_fn = AsymmetricFocalLoss().to(device)
+loss_fn = nn.BCEWithLogitsLoss().to(device)
+#loss_fn = TwoWayLoss().to(device)
 optimizer = RAdam(sqnet_model.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0)
+#optimizer = RAdam(sqnet_model.parameters(), lr=1e-2, betas=(0.9, 0.999), eps=1e-8, weight_decay=0)
 #optimizer = torch.optim.SGD(sqnet_model.parameters(), lr=0.01, weight_decay=1e-6)
+#optimizer = torch.optim.Adam(sqnet_model.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0)
 
 
-serial_module = torch.jit.script(sqnet_model)
+#serial_module = torch.jit.script(sqnet_model)
 
 def get_mean_of_list(L):
     return sum(L) / len(L)
@@ -334,10 +396,14 @@ def _validate(model, dataloader):
 
         for batch_idx, (data, targets) in enumerate(dataloader):
             data = data.to(device)
-            targets = targets.long().to(device)
+            targets = targets.to(device)
             predictions = sqnet_model(data)
+            predictions_softmax = torch.softmax(predictions, dim=1)
+            targets_sigmoid = torch.sigmoid(targets)
 
             loss = loss_fn(predictions, targets)
+            #loss = loss_fn(predictions_softmax, targets)
+            #loss = loss_fn(predictions, targets_sigmoid)
             valid_loss += loss.item()
             counter += 1
         valid_loss = valid_loss / counter
@@ -359,23 +425,40 @@ writer = SummaryWriter()
 
 best_weights_model_folder_path = config.BEST_WEIGHTS_MODEL_FOLDER_PATH
 
-for epoch_counter in tqdm(range(100), desc='Epoch progress'):
+for epoch_counter in tqdm(range(config.EPOCH_NUM), desc='Epoch progress'):
 
     epoch_losses_train = []
-    for batch_idx, (data, targets) in enumerate(train_dataloader):
+    
+    #for batch_idx, (data, targets) in enumerate(train_dataloader):
+    for batch_idx, batch in enumerate(train_dataloader):
         optimizer.zero_grad()
         
-        data = data.to(device)
+        #print(np.asarray(data, dtype="object").shape)
+        #print(targets)
+        data = batch[0].to(device)
+        #data = data.to(device)
         #print(data.shape)
         #print(targets)
-        targets = targets.long().to(device)
+
+        targets = batch[1].to(device)
+        #targets = targets.to(device)
         #targets = targets.float().unsqueeze(1).to(device)
         #print(targets)
         #print(targets.shape)
     
        
         predictions = sqnet_model(data)
-        #print(predictions.shape)
+        predictions_softmax = torch.softmax(predictions, dim=1)
+        targets_softmax = torch.softmax(targets, dim=1)
+        targets_sigmoid = torch.sigmoid(targets)
+
+
+        #print(predictions_sigmoid)
+        # print(predictions.shape)
+        # print(predictions_softmax.shape)
+        # print(torch.argmax(predictions, dim=1))
+        # print(torch.argmax(predictions_softmax, dim=1))
+        # print("==============================")
         #predictions = torch.argmax(predictions, dim=1)
         #predictions = predictions.type(torch.cuda.FloatTensor)
         #targets = targets.type(torch.cuda.FloatTensor)
@@ -387,6 +470,8 @@ for epoch_counter in tqdm(range(100), desc='Epoch progress'):
         #traced_script_module_predictions = torch.jit.trace(sqnet_model, data)
         
         loss = loss_fn(predictions, targets)
+        #loss = loss_fn(predictions_softmax, targets)
+        #loss = loss_fn(predictions_softmax, targets_sigmoid)
         epoch_losses_train.append(loss.to(device).data.item())
         #print(loss)
         loss.backward()
@@ -412,7 +497,7 @@ for epoch_counter in tqdm(range(100), desc='Epoch progress'):
     torch.save(sqnet_model.state_dict(), saved_model_path)
 
     # save torch script model
-    serial_module.save(serial_module_model_path)
+    #serial_module.save(serial_module_model_path)
 
     
     with open(mean_batch_training_loss_text_file_path, 'a') as filetowrite:
@@ -436,7 +521,7 @@ for epoch_counter in tqdm(range(100), desc='Epoch progress'):
         torch.save(sqnet_model.state_dict(), os.path.join(best_weights_model_folder_path, "epoch_{}_lowest_mean_batch_training_loss_model.pt".format(epoch_counter)))
         
         serial_module_model_path = os.path.join(best_weights_model_folder_path, "epoch_{}_serial_module_lowest_mean_batch_training_loss_model.pt".format(epoch_counter))
-        serial_module.save(serial_module_model_path)
+        #serial_module.save(serial_module_model_path)
         
         lowest_mean_batch_loss_text_file_path = config.LOWEST_MEAN_BATCH_LOSS_TEXT_FILE_PATH
         with open(lowest_mean_batch_loss_text_file_path, 'w') as filetowrite:
@@ -459,7 +544,7 @@ for epoch_counter in tqdm(range(100), desc='Epoch progress'):
         torch.save(sqnet_model.state_dict(), os.path.join(best_weights_model_folder_path, "epoch_{}_lowest_validation_loss_model.pt".format(epoch_counter)))
         
         serial_module_model_path = os.path.join(best_weights_model_folder_path, "epoch_{}_serial_module_lowest_validation_loss_model.pt".format(epoch_counter))
-        serial_module.save(serial_module_model_path)
+        #serial_module.save(serial_module_model_path)
 
         lowest_validation_loss_text_file_path = config.LOWEST_VALIDATION_LOSS_TEXT_FILE_PATH
         with open(lowest_validation_loss_text_file_path, 'w') as filetowrite:
